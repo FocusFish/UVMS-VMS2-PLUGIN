@@ -1,0 +1,454 @@
+openapi: 3.0.1
+info:
+  title: vessel-positions-partner
+  description: API for vessel positions
+  termsOfService: https://www.havochvatten.se/data-kartor-och-rapporter/data-och-statistik/data-och-apier.html
+  contact:
+    name: API support
+    url: https://focusfish.github.io
+    email: uvms@havochvatten.se
+  version: 1.0.0
+  x-audience: external-partner
+externalDocs:
+  description: API documentation
+  url: https://focusfish.github.io
+servers:
+  - url: /{version}
+    variables:
+      version:
+        default: v1
+        description: The major version of the API
+tags:
+  - name: vessel-positions
+    description: Different methods to support the resources
+  - name: operations
+    description: Different methods to support operation
+paths:
+
+  /positions:
+    post:
+      tags:
+        - vessel-positions
+      summary: Post a vessel position
+      description: Post a vessel position
+      operationId: postVesselPosition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VesselPosition'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VesselPositionResponse'
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VesselPositionResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        default:
+          $ref: '#/components/responses/GenericNon2xxResponses'
+      security:
+        - OAuth2: []
+
+  /operations/metadata:
+    get:
+      tags:
+        - operations
+      summary: Metadata of the API
+      description: Metadata of the API
+      operationId: getMetadata
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataResponse'
+        default:
+          $ref: '#/components/responses/GenericNon2xxResponses'
+      security:
+        - OAuth2: []
+
+  /operations/health-checks/readiness:
+    get:
+      tags:
+        - operations
+      summary: Operation for health-checks
+      description: A health check for readiness allows third party services to know if the application is ready to process requests or not
+      operationId: getHealthChecksReadiness
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthChecks'
+        default:
+          $ref: '#/components/responses/GenericNon2xxResponses'
+      security:
+        - OAuth2: []
+
+components:
+  requestBodies:
+    VesselPosition:
+      description: vessel position
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/VesselPosition'
+
+  responses:
+
+    NoContent:
+      description: No content (204)
+
+    GenericNon2xxResponses:
+      description: |
+        301: Moved permanently <br/>
+        400: Bad request - Invalid request from client <br/>
+        401: Unauthorized <br/>
+        403: Forbidden <br/>
+        404: Not found - Requested resource not found <br/>
+        405: Method not allowed <br/>
+        406: Not acceptable <br/>
+        408: Request timeout <br/>
+        415: Unsupported media type <br/>
+        429: Too many requests <br/>
+        500: Internal server error <br/>
+        501: Not implemented <br/>
+        503: Service unavailable <br/>
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Conflict:
+      description: '409: Conflict - The requested operation could not be performed due to a conflict'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    VesselPosition:
+      type: object
+      required:
+        - messageId
+        - vessel
+        - coordinates
+        - positionAt
+        - reporter
+      properties:
+        messageId:
+          type: string
+          format: urn
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$
+          description: Unique identifier for the message from the external system. Used for idempotency and duplicate detection.
+          example: e0c5342c-d8ac-476f-84e4-55da0980c467
+        vessel:
+          $ref: '#/components/schemas/Vessel'
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        positionAt:
+          type: string
+          format: date-time
+          description: Position timestamp (UTC)
+          example: '2025-11-21T12:03:44Z'
+        courseOverGround:
+          type: number
+          format: double
+          description: Reported course (in degrees)
+          example: 132
+        speedOverGround:
+          type: number
+          format: double
+          description: Reported speed ()in knots)
+          example: 3.0
+        reporter:
+          $ref: '#/components/schemas/Reporter'
+      example:
+        messageId: e0c5342c-d8ac-476f-84e4-55da0980c467
+        vessel:
+          cfr: SWE000001111
+        coordinates:
+          latitude: 57.715
+          longitude: 11.973
+        positionAt: '2025-11-21T12:03:44Z'
+        courseOverGround: 132
+        speedOverGround: 3.0
+        reporter:
+          reportedAt: '2025-11-21T12:16:00Z'
+          externalSystem: An external system
+          source: vms
+          reportType: position
+          quality:
+            isValid: true
+            positionAccuracy: high
+            sourceReliability: trusted
+            comment: a comment
+
+    Coordinates:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90          
+          description: Latitude in decimal degrees (WGS84)
+          example: 57.715
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180          
+          description: Longitude in decimal degrees (WGS84)
+          example: 11.973
+      description: coordinates
+      example:
+        latitude: 57.715
+        longitude: 11.973
+
+    PositionQuality:
+      type: object
+      description: Metadata regarding the quality and validity of the position.
+      properties:
+        isValid:
+          type: boolean
+          description: Whether the position is considered valid by the external system.
+          example: true
+        positionAccuracy:
+          type: string
+          description: Qualitative assessment of accuracy (FREE_TEXT, or agreed codes).
+          x-extensible-enum:
+            - high
+            - medium
+            - low
+          example: high
+        sourceReliability:
+          type: string
+          description: Qualitative assessment of source reliability.
+          x-extensible-enum:
+            - trusted
+            - not-trusted
+          example: trusted
+        comment:
+          type: string
+          description: Free-text comment regarding quality or anomalies.
+          example: a comment
+      example:
+        isValid: true
+        positionAccuracy: high
+        sourceReliability: trusted
+        comment: a comment
+
+    Reporter:
+      type: object
+      required:
+        - reportedAt
+        - externalSystem
+        - source
+        - reportType
+      properties:
+        reportedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the external system received or generated the report (UTC).
+          example: '2025-11-21T12:16:00Z'
+        externalSystem:
+          type: string
+          description: Which external system is transmitting the position
+          example: An external system
+        source:
+          type: string
+          description: Type of position source.
+          x-extensible-enum:
+            - vms
+            - ais
+            - other
+          example: vms
+        reportType:
+          type: string 
+          x-extensible-enum:
+            - entry
+            - exit
+            - position
+            - manual
+          description: Type of position
+          example: position
+        quality:
+          $ref: '#/components/schemas/PositionQuality'
+      description: reporter
+      example:
+        reportedAt: '2025-11-21T12:16:00Z'
+        externalSystem: An external system
+        source: vms
+        reportType: position
+        quality:
+          isValid: true
+          positionAccuracy: high
+          sourceReliability: trusted
+          comment: a comment
+        
+    Vessel:
+      type: object
+      required:
+        - cfr
+      properties:
+        cfr:
+          type: string
+          format: urn
+          pattern: ^[A-Z]{3}[A-Z0-9]{9}$
+          description: cfr - common fleet register
+          example: SWE000001111
+      example:
+        cfr: SWE000001111
+
+    VesselPositionResponse:
+      type: object
+      required:
+        - id
+        - code
+      properties:
+        id:
+          type: string
+          format: urn
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          description: Unique id for the entity
+          example: bf14bf37-7bcc-4b39-828c-4145ad02615a
+        code:
+          type: integer
+          format: int32
+          minimum: 100
+          maximum: 300
+          exclusiveMaximum: true
+          description: The HTTP status code generated by the origin server.
+          example: 201
+        detail:
+          type: string
+          description: An optional human readable description of the response, given if it gives more information than the code
+          example: The creation was successful and generated 3 new order line numbers
+      example:
+        id: bf14bf37-7bcc-4b39-828c-4145ad02615a
+        code: 201
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - detail
+      properties:
+        id:
+          type: string
+          format: urn
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+          description: Unique id for identifying the error
+          example: bf14bf37-7bcc-4b39-828c-4145ad02615a
+        code:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 1000000
+          exclusiveMaximum: true
+          description: An application specific error code
+          example: 15503
+        detail:
+          type: string
+          description: A human readable description of the error
+          example: Invalid value
+      example:
+        id: bf14bf37-7bcc-4b39-828c-4145ad02615a
+        code: 15503
+        detail: invalid value
+
+    HealthCheck:
+      type: object
+      required:
+        - description
+        - state
+      properties:
+        description:
+          type: string
+          description: The name of the service
+          example: Service A
+        state:
+          type: string
+          x-extensible-enum:
+            - up
+            - down
+          description: The state of the service
+          example: up
+      description: Object for health
+      example:
+        description: Service is ready
+        state: up
+
+    HealthChecks:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/HealthCheck'
+      description: List of objects for health
+      example:
+        readiness:
+          description: Service is ready
+          state: up
+
+    MetadataResponse:
+      type: object
+      required:
+        - apiName
+        - apiVersion
+        - apiReleasedAt
+        - apiDocumentation
+        - apiStatus
+      properties:
+        apiName:
+          type: string
+          description: The name of the API (same as OpenAPI title)
+          example: vessel-positions-partner
+        apiVersion:
+          type: string
+          description: The version of the API (same as OpenAPI version)
+          example: 1.0.0
+        apiReleasedAt:
+          type: string
+          format: date-time
+          description: The date then API was published
+          example: '2025-12-01T12:00:00Z'
+        apiDocumentation:
+          type: string
+          description: A link to the documentation of the API
+          example: https://focusfish.github.io
+        apiStatus:
+          type: string
+          x-extensible-enum:
+            - active
+            - deprecated
+            - retired
+          description: The status of the API
+          example: active
+      example:
+        apiName: vessel-positions-partner
+        apiVersion: 1.0.0
+        apiReleasedAt: '2025-12-01T12:00:00Z'
+        apiDocumentation: https://focusfish.github.io
+        apiStatus: active
+
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes: {}
