@@ -144,7 +144,7 @@ public class StartupBean extends PluginDataHolder {
     }
 
     public String getPluginResponseSubscriptionName() {
-        return getRegisterClassName() + getPluginApplicationProperty("application.responseTopicName");
+        return getRegisterClassName() + "." + getPluginApplicationProperty("application.responseTopicName");
     }
 
     public String getResponseTopicMessageName() {

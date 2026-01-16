@@ -42,6 +42,7 @@ public class ServiceMapper {
         serviceType.setServiceClassName(serviceClassName);
         serviceType.setServiceResponseMessageName(responseMessageName);
         serviceType.setPluginType(type);
+        serviceType.setSatelliteType("VMS");
 
         return serviceType;
     }
