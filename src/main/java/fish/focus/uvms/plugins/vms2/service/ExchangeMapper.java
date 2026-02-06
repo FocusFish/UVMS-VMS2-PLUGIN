@@ -11,10 +11,8 @@ import fish.focus.uvms.plugins.vms2.StartupBean;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import java.util.Base64;
-import java.util.Date;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.util.Date;
 
 @Stateless
 public class ExchangeMapper {
@@ -24,31 +22,35 @@ public class ExchangeMapper {
     public SetReportMovementType getSetReportMovementType(VesselPosition vesselPosition) {
         MovementBaseType movement = createMovementBaseType(vesselPosition);
 
-        return createSetReportMovementType(vesselPosition.toString().getBytes(UTF_8), movement);
+        return getMovementReport(movement);
     }
 
     private MovementBaseType createMovementBaseType(VesselPosition vesselPosition) {
+        
         MovementBaseType movement = new MovementBaseType();
-
-        AssetId assetId = getAssetId(vesselPosition);
-        movement.setAssetId(assetId);
-
-        MovementPoint movementPoint = getMovementPoint(vesselPosition);
-        movement.setPosition(movementPoint);
-
+        
+        movement.setAssetId(getAssetId(vesselPosition));
+        movement.setPosition(getMovementPoint(vesselPosition));
         movement.setComChannelType(MovementComChannelType.MOBILE_TERMINAL);
         movement.setMovementType(MovementTypeType.POS);
         movement.setPositionTime(Date.from(vesselPosition.getPositionAt()));
         movement.setReportedCourse(vesselPosition.getCourseOverGround());
         movement.setReportedSpeed(vesselPosition.getSpeedOverGround());
+         
+        if ( vesselPosition.getReporter() != null
+            && vesselPosition.getReporter().getSource() != null
+            && "INMARSAT-C".equalsIgnoreCase(vesselPosition.getReporter().getSource()) ) {
 
-        movement.setSource(MovementSourceType.IRIDIUM);
-        // options for status?
-//        movement.setStatus(vesselPosition.getMessageId());
-//        movement.setStatus(vesselPosition.getReporter().getQuality().getPositionAccuracy() + "-" + vesselPosition.getReporter().getQuality().getSourceReliability());
+            movement.setSource(MovementSourceType.INMARSAT_C);
 
+        } else {
+            movement.setSource(MovementSourceType.IRIDIUM);
+        }
+
+        
         movement.setLesReportTime(Date.from(vesselPosition.getReporter().getReportedAt()));
-
+        movement.setPositionTime(Date.from(vesselPosition.getPositionAt()));
+        
         return movement;
     }
 
@@ -72,15 +74,13 @@ public class ExchangeMapper {
         return movementPoint;
     }
 
-    private SetReportMovementType createSetReportMovementType(byte[] messageAsBytes, MovementBaseType movement) {
-        SetReportMovementType reportType = new SetReportMovementType();
-
-        reportType.setMovement(movement);
-        reportType.setTimestamp(new Date());
-        reportType.setPluginName(startupBean.getRegisterClassName() + "." + startupBean.getApplicationName());
-        reportType.setPluginType(PluginType.SATELLITE_RECEIVER);
-        reportType.setOriginalIncomingMessage(Base64.getEncoder().encodeToString(messageAsBytes));
-
-        return reportType;
+    private SetReportMovementType getMovementReport(MovementBaseType movement) {
+        SetReportMovementType report = new SetReportMovementType();
+        report.setTimestamp(new Date());
+        report.setPluginName(startupBean.getRegisterClassName());
+        report.setPluginType(PluginType.OTHER);
+        report.setMovement(movement);
+        return report;
     }
+
 }
