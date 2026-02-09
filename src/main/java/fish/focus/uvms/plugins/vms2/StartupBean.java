@@ -79,6 +79,8 @@ public class StartupBean extends PluginDataHolder {
 
         register();
 
+        setEnabled(true);
+
         LOG.debug("Settings updated in plugin {}", REGISTER_CLASS_NAME);
         for (Map.Entry<String, String> entry : super.getSettings().entrySet()) {
             LOG.debug("Setting: KEY: {} , VALUE: {}", entry.getKey(), entry.getValue());
@@ -144,7 +146,7 @@ public class StartupBean extends PluginDataHolder {
     }
 
     public String getPluginResponseSubscriptionName() {
-        return getRegisterClassName() + getPluginApplicationProperty("application.responseTopicName");
+        return getRegisterClassName() + "." + getPluginApplicationProperty("application.responseTopicName");
     }
 
     public String getResponseTopicMessageName() {

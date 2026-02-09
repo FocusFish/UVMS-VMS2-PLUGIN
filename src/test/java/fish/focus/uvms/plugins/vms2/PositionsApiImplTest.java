@@ -21,8 +21,6 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static io.restassured.config.ObjectMapperConfig.objectMapperConfig;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @RunWith(Arquillian.class)
@@ -82,28 +80,62 @@ public class PositionsApiImplTest extends BuildDeployment {
             .statusCode(201)
             .body("id", is(notNullValue()))
             .body("code", is(201));
+    }
 
-        when()
-            .get(RESULT_URL)
+    @Test
+    @OperateOnDeployment("normal")
+    public void givenValidPosition_whenPosting_thenReturnCreatedInmarsat() {
+        var vesselPosition = getValidVesselPositionInmarsat();
+
+        given()
+            .body(vesselPosition)
+            .contentType("application/json")
+        .when()
+            .post(POSITIONS_URL)
         .then()
-            .body("result", is(true));
+            .statusCode(201)
+            .body("id", is(notNullValue()))
+            .body("code", is(201));
     }
 
     private static VesselPosition getValidVesselPosition() {
         String messageId = UUID.randomUUID().toString();
 
-        var cfr = "CFR000001234";
+        var cfr = "CFR411045665";
         var vessel = new Vessel(cfr);
 
-        Double lat = 52.1235678;
-        Double lon = 51.0987654;
+        Double lat = 57.676840;
+        Double lon = 11.375151;
+
         Coordinates coordinates =  new Coordinates(lat, lon);
 
         Instant positionAt =  Instant.now();
 
         Instant reportedAt = Instant.now();
-        String externalSystem = "some external system";
-        String source =  "some source";
+        String externalSystem = "VMS";
+        String source = "IRIDIUM";
+        String reportType = "position";
+        Reporter reporter = new Reporter(reportedAt, externalSystem, source, reportType);
+
+        return new VesselPosition(messageId, vessel, coordinates, positionAt, reporter);
+    }
+
+    private static VesselPosition getValidVesselPositionInmarsat() {
+        String messageId = UUID.randomUUID().toString();
+
+        var cfr = "CFR167844536";
+        var vessel = new Vessel(cfr);
+
+        Double lat = 58.686840;
+        Double lon = 12.395151;
+
+        Coordinates coordinates =  new Coordinates(lat, lon);
+
+        Instant positionAt =  Instant.now();
+
+        Instant reportedAt = Instant.now();
+        String externalSystem = "VMS";
+        String source = "INMARSAT-C";
         String reportType = "position";
         Reporter reporter = new Reporter(reportedAt, externalSystem, source, reportType);
 
