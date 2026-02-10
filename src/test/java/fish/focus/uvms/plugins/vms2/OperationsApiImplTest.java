@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.equalTo;
 @RunAsClient
 public class OperationsApiImplTest extends BuildDeployment {
 
-    private static final String BASE_URL = "http://localhost:28080/unionvms/vms2/rest/";
+    private static final String BASE_URL = "http://localhost:28080/vms2/rest/";
 
     @Test
     @OperateOnDeployment("normal")

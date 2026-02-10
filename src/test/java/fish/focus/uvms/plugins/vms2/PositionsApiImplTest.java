@@ -27,8 +27,7 @@ import static org.hamcrest.Matchers.*;
 @RunAsClient
 public class PositionsApiImplTest extends BuildDeployment {
 
-    private static final String POSITIONS_URL = "http://localhost:28080/unionvms/vms2/rest/positions";
-    private static final String RESULT_URL = "http://localhost:28080/unionvms/vms2/rest/test/result";
+    private static final String POSITIONS_URL = "http://localhost:28080/vms2/rest/positions";
 
     @BeforeClass
     public static void setup() {
