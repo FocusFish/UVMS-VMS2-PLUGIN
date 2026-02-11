@@ -181,9 +181,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <packagingExcludes>WEB-INF/jboss-web.xml</packagingExcludes>
-                </configuration>
             </plugin>
         </plugins>
         <resources>
