@@ -6,6 +6,8 @@ import fish.focus.uvms.plugins.vms2.gen.model.VesselPosition;
 import fish.focus.uvms.plugins.vms2.gen.model.VesselPositionResponse;
 import fish.focus.uvms.plugins.vms2.service.Exchange;
 import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import javax.inject.Inject;
@@ -17,6 +19,8 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 @Path("")
 public class PositionsApiImpl implements PositionsApi {
 
+    private static final Logger log = LoggerFactory.getLogger(PositionsApiImpl.class);
+
     @Inject
     private Exchange exchange;
 
@@ -26,6 +30,8 @@ public class PositionsApiImpl implements PositionsApi {
         if (vesselPosition == null) {
             throw new PositionException("Input vessel position is null.");
         }
+
+        log.info("Incoming Vessel position {}", vesselPosition);
 
         exchange.save(vesselPosition);
 
