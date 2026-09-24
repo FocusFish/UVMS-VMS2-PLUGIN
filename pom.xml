@@ -5,7 +5,7 @@
     <groupId>fish.focus.uvms.plugins.vms2</groupId>
     <artifactId>vms2</artifactId>
     <name>vms2</name>
-    <version>0.1.2</version>
+    <version>0.1.3</version>
     <packaging>war</packaging>
 
     <parent>
@@ -23,13 +23,13 @@
     </scm>
 
     <properties>
-        <docker.dev.version>4.7.0</docker.dev.version>
+        <docker.dev.version>4.8.0</docker.dev.version>
         <docker.dev.start.phase>test-compile</docker.dev.start.phase>
         <docker.dev.prestop.phase>validate</docker.dev.prestop.phase>
 
         <uvms.pom.version>3.34</uvms.pom.version>
         <uvms.common.version>4.2.0</uvms.common.version>
-        <exchange.model.version>5.4.0</exchange.model.version>
+        <exchange.model.version>5.5.0</exchange.model.version>
 
         <project.scm.id>github</project.scm.id>
         <installAtEnd>false</installAtEnd>
@@ -49,7 +49,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>2.20.1</version>
+                <version>2.22.0</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -90,7 +90,7 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <version>5.5.6</version>
+            <version>5.5.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
